@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Academic Programs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Filters container */
+    .filters {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    /* Container for stacked search and category */
+    .search-category {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    /* Search input and select styling */
+    #searchInput,
+    #categoryFilter {
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid #0e572d;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+
+    #searchInput:focus,
+    #categoryFilter:focus {
+      outline: none;
+      border-color: #bfb290;
+    }
+
+    /* Type filter checkboxes container */
+    #typeFilter {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px 24px;
+      max-width: 700px;
+      user-select: none;
+      justify-items: center; /* Center items horizontally */
+      align-items: center;
+      margin: 0 auto;
+    }
+
+    /* Each label now wraps the input inside */
+    #typeFilter label {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* align left */
+      gap: 6px; /* spacing between checkbox and text */
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #2d3748;
+      border: 1.5px solid #0e572d;
+      padding: 6px 10px;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      user-select: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Checkbox inside label */
+    #typeFilter label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    /* Style label when input checked */
+    #typeFilter label input[type="checkbox"]:checked + span,
+    #typeFilter label input[type="checkbox"]:checked {
+      background-color: #0e572d;
+      color: white;
+      border-color: #0a4221;
+    }
+
+    #typeFilter label input[type="checkbox"]:checked {
+      /* no direct styling needed on checkbox */
+    }
+
+    /* To style the label background and text on checked,
+       we instead apply background to label when input is checked using sibling or :has pseudo-class.
+       Since :has is not well-supported, we do the style on label when input is checked via JS or just keep consistent styles. */
+
+    /* Reset button styling */
+    #resetFilters {
+      background: #0e572d;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      margin-top: 0.5rem;
+      user-select: none;
+      max-width: 700px;
+    }
+
+    #resetFilters:hover {
+      background-color: #ffffff;
+      color: #0e572d;
+      border: 1px solid #0e572d;
+      transition: all 0.3s ease;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: white;
+      overflow: hidden;
+    }
+
+    thead {
+      background: #0e572d;
+      color: white;
+    }
+
+    thead th {
+      color: white;
+    }
+
+    th,
+    td {
+      padding: 12px 15px;
+      text-align: left;
+    }
+
+    th {
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.03em;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #e4e7eb;
+      transition: background-color 0.3s ease;
+      cursor: default;
+    }
+
+    tbody tr:hover {
+      background-color: #c0d0c7;
+      border-left: 4px solid #0e572d;
+    }
+
+    td.category,
+    th.category {
+      display: none;
+    }
+
+    a.program-link {
+      color: #313131;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    a.program-link:hover,
+    a.program-link:focus {
+      color: #0e572d;
+      outline: none;
+      text-decoration: underline;
+    }
+
+    /* Link styling for other anchors */
+    a:hover,
+    a:focus {
+      color: #2a9148;
+      outline: none;
+    }
+
+    /* Load more button */
+    #loadMoreBtn {
+      background: #0e572d;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.25s ease;
+      margin-top: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      user-select: none;
+      max-width: 700px;
+    }
+
+    #loadMoreBtn:hover {
+      background-color: #ffffff;
+      color: #0e572d;
+      border: 1px solid #0e572d;
+      transition: all 0.3s ease;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 570px) {
+      .search-category {
+        max-width: 100%; /* Allow full width on mobile */
+      }
+
+      #typeFilter {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: min-content;
+        gap: 8px 12px;
+        max-width: 100%;
+        justify-items: start;
+        margin: 0 auto;
+      }
+
+      #typeFilter label {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+      }
+
+      #resetFilters {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+
+  <div class="filters" aria-label="Filters">
+    <div class="search-category">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search..."
+        aria-label="Search programs"
+      />
+      <select id="categoryFilter" aria-label="Filter by category">
+        <option value="">Filter by category</option>
+        <option value="communication">
+          Communication, Creative Expression, and Visual Arts
+        </option>
+        <option value="business">Accounting, Business, Finance, and Marketing</option>
+        <option value="government">Government, Law, and Public Policy</option>
+        <option value="healthcare">Healthcare, Medicine, and Counseling</option>
+        <option value="math">Aeronautics, Technology, and Mathematics</option>
+        <option value="science">
+          Science, the Natural World, and Conservation
+        </option>
+        <option value="animal">
+          Animal Science, Equine, and Veterinary Science
+        </option>
+        <option value="education">Education, Non-Profits, and Social Impact</option>
+      </select>
+    </div>
+    <div id="loadingScreen" style="display: none; justify-content:center; align-items:center; position: fixed; inset:0; background-color:rgba(255,255,255,0.95); z-index: 2000; flex-direction:column;">
+      <div style="margin-bottom:1rem;">
+        <svg width="50" height="50" viewBox="0 0 44 44" stroke="#0e572d">
+          <g fill="none" fill-rule="evenodd" stroke-width="2">
+            <circle cx="22" cy="22" r="1"></circle>
+            <circle cx="22" cy="22" r="1"></circle>
+          </g>
+        </svg>
+      </div>
+      <div style="font-size:1.2rem; color:#0e572d;">Loading programs...</div>
+    </div>
+
+    <div id="errorMessage" style="display:none; color:#b94a48; background:#f9d6d5; border:1.5px solid #b94a48; padding:18px; text-align:center; font-size:1.1rem; margin:18px;">
+      Error loading programs. Please try again later.
+      ...
+    </div>
+
+    <div id="typeFilter" style="margin-top: 0.5rem;">
+      <label for="typeDoctorate"><input type="checkbox" id="typeDoctorate" value="doctorate" />Doctorate</label>
+
+      <label for="typeMaster"><input type="checkbox" id="typeMaster" value="master" />Master</label>
+
+      <label for="typeMajor"><input type="checkbox" id="typeMajor" value="major" />Major</label>
+
+      <label for="typeMinor"><input type="checkbox" id="typeMinor" value="minor" />Minor</label>
+
+      <label for="typeConcentration"><input type="checkbox" id="typeConcentration" value="concentration" />Concentration</label>
+
+      <label for="typePreprofessional"><input type="checkbox" id="typePreprofessional" value="preprofessional" />Preprofessional</label>
+    </div>
+
+    <button id="resetFilters" type="button" aria-label="Reset all filters">
+      Reset Filters
+    </button>
+  </div>
+
+  <table id="programTable" aria-label="Academic Programs Table">
+    <thead>
+      <tr>
+        <th>Program</th>
+        <th>Type</th>
+        <th class="category">Category</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button
+    id="loadMoreBtn"
+    aria-label="Load more programs"
+    type="button"
+  >
+    Load More
+  </button>
+
+<script>
+  const sheetURL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRm4Zhf6Jy8GMT0G86cTF_udC5XRHl40HCwdXazfDWTBoIC8YBqcHZFWV_gyYEYCNPNU-DFMJICuZ1k/pub?output=csv";
+
+  let allRows = [];
+  let visibleCount = 20;
+
+  async function loadSheetData() {
+    try {
+      document.getElementById("loadingScreen").style.display = "flex";
+      const response = await fetch(sheetURL);
+      if (!response.ok) throw new Error("Network response was not ok");
+      const text = await response.text();
+      const rows = text.trim().split("\n").map((row) => {
+        const parts = [];
+        let current = "";
+        let inQuotes = false;
+        for (let char of row) {
+          if (char === '"' && !inQuotes) {
+            inQuotes = true;
+          } else if (char === '"' && inQuotes) {
+            inQuotes = false;
+          } else if (char === "," && !inQuotes) {
+            parts.push(current);
+            current = "";
+          } else {
+            current += char;
+          }
+        }
+        parts.push(current);
+        return parts;
+      });
+      allRows = rows.slice(1); // Remove header
+      renderRows();
+    } catch (error) {
+      document.getElementById("errorMessage").style.display = "block";
+      console.error("Failed to load data:", error);
+    } finally {
+      document.getElementById("loadingScreen").style.display = "none";
+    }
+  }
+
+  function renderRows() {
+    const tableBody = document.querySelector("#programTable tbody");
+    tableBody.innerHTML = ""; // Clear previous
+
+    const filtered = getFilteredRows();
+    const toShow = filtered.slice(0, visibleCount);
+
+    for (const row of toShow) {
+      const programName = row[0];
+      const type = row[1];
+      const category = row[2];
+      const link = row[6]; // Link column
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><a href="${link}" target="_blank" rel="noopener noreferrer" class="program-link">${programName}</a></td>
+        <td>${type}</td>
+        <td class="category">${category}</td>
+      `;
+      tableBody.appendChild(tr);
+    }
+
+    // Show or hide Load More button depending on remaining rows
+    document.getElementById("loadMoreBtn").style.display =
+      filtered.length > visibleCount ? "block" : "none";
+  }
+
+  function getFilteredRows() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    const checkedTypes = Array.from(
+      document.querySelectorAll("#typeFilter input[type='checkbox']:checked")
+    ).map((cb) => cb.value.toLowerCase());
+
+    return allRows.filter((row) => {
+      const program = row[0] || "";
+      const type = row[1] || "";
+      const categories = row.slice(2, 6); // Assuming categories are in columns 2 to 5
+      const keywords = row[7] || "";
+
+      const matchesSearch =
+        program.toLowerCase().includes(searchTerm) ||
+        keywords.toLowerCase().includes(searchTerm);
+
+      const matchesCategory =
+        selectedCategory === "" || categories.some(category => category.toLowerCase() === selectedCategory);
+
+      const matchesType =
+        checkedTypes.length === 0 ||
+        checkedTypes.some((checked) => type.toLowerCase().includes(checked));
+
+      return matchesSearch && matchesCategory && matchesType;
+    });
+  }
+
+  document.getElementById("searchInput").addEventListener("input", () => {
+    visibleCount = 20;
+    renderRows();
+  });
+
+  document.getElementById("categoryFilter").addEventListener("change", () => {
+    visibleCount = 20;
+    renderRows();
+  });
+
+  document.querySelectorAll("#typeFilter input[type='checkbox']").forEach((cb) => {
+    cb.addEventListener("change", () => {
+      visibleCount = 20;
+      renderRows();
+    });
+  });
+
+  document.getElementById("resetFilters").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("categoryFilter").value = "";
+    document.querySelectorAll("#typeFilter input[type='checkbox']").forEach((cb) => {
+      cb.checked = false;
+    });
+    visibleCount = 20;
+    renderRows();
+  });
+
+  document.getElementById("loadMoreBtn").addEventListener("click", () => {
+    visibleCount += 20;
+    renderRows();
+  });
+
+  // Load data on page load
+  window.addEventListener("DOMContentLoaded", loadSheetData);
+</script>
+
+</body>
+</html>
